@@ -51,8 +51,8 @@ function startCountdown(seconds) {
 // Snapshot Foto dari Video
 function captureSnapshot() {
   const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = 640;
-  tempCanvas.height = 480;
+  tempCanvas.width = video.videoWidth || 1280;
+  tempCanvas.height = video.videoHeight || 720;
   const tempCtx = tempCanvas.getContext('2d');
 
   tempCtx.filter = filterSelect.value;
@@ -91,6 +91,26 @@ startBtn.addEventListener('click', async () => {
   startBtn.disabled = false;
   downloadBtn.disabled = false;
 });
+
+// FUNGSI KHUSUS: Menggambar gambar ke canvas dengan rasio proporsional (Tanpa Gepeng)
+function drawImageProp(targetCtx, img, x, y, w, h) {
+  const imgW = img.width;
+  const imgH = img.height;
+  const imgRatio = imgW / imgH;
+  const targetRatio = w / h;
+
+  let srcX = 0, srcY = 0, srcW = imgW, srcH = imgH;
+
+  if (imgRatio > targetRatio) {
+    srcW = imgH * targetRatio;
+    srcX = (imgW - srcW) / 2;
+  } else {
+    srcH = imgW / targetRatio;
+    srcY = (imgH - srcH) / 2;
+  }
+
+  targetCtx.drawImage(img, srcX, srcY, srcW, srcH, x, y, w, h);
+}
 
 // MENGGAMBAR BUNGA MAWAR 3D BESAR
 function drawLargeRoseCluster(x, y, scale = 1.8) {
@@ -167,7 +187,7 @@ function drawLargeHeart3D(x, y, size = 25) {
   ctx.restore();
 }
 
-// Helper Menggambar List Ikon Dekorasi Mengelilingi Frame
+// Helper Menggambar List Ikon Dekorasi
 function drawEmojiBorder(icons) {
   ctx.font = '42px sans-serif';
   ctx.textAlign = 'center';
@@ -175,14 +195,12 @@ function drawEmojiBorder(icons) {
 
   let idx = 0;
 
-  // Sisi Atas & Bawah
   for (let x = 45; x <= canvas.width - 45; x += 65) {
     ctx.fillText(icons[idx % icons.length], x, 40);
     ctx.fillText(icons[(idx + 2) % icons.length], x, canvas.height - 40);
     idx++;
   }
 
-  // Sisi Kiri & Kanan
   for (let y = 105; y <= canvas.height - 105; y += 65) {
     ctx.fillText(icons[idx % icons.length], 40, y);
     ctx.fillText(icons[(idx + 3) % icons.length], canvas.width - 40, y);
@@ -197,7 +215,7 @@ function renderPhotoLayout() {
 
   const borderThickness = 80; 
   const imgW = 280;
-  const imgH = 210;
+  const imgH = 210; // Rasio standar 4:3
   const gap = 15;
 
   let cols = 1;
@@ -216,7 +234,7 @@ function renderPhotoLayout() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // 2. Draw Photos
+  // 2. Draw Photos Proporsional (Anti Gepeng)
   capturedImages.forEach((img, index) => {
     const col = index % cols;
     const row = Math.floor(index / cols);
@@ -227,10 +245,12 @@ function renderPhotoLayout() {
     // Inner Border Foto
     ctx.fillStyle = '#cbd5e1';
     ctx.fillRect(xPos - 3, yPos - 3, imgW + 6, imgH + 6);
-    ctx.drawImage(img, xPos, yPos, imgW, imgH);
+    
+    // Dipanggil lewat fungsi drawImageProp agar rasio foto tidak tertarik/gepeng
+    drawImageProp(ctx, img, xPos, yPos, imgW, imgH);
   });
 
-  // 3. Logika 10 Tema Dekorasi Frame
+  // 3. Dekorasi Frame
   if (style === 'rose_romantic') {
     drawLargeRoseCluster(60, 60, 1.4);
     drawLargeRoseCluster(canvas.width - 60, 60, 1.4);
