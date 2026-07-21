@@ -16,16 +16,20 @@ filterSelect.addEventListener('change', () => {
   video.style.filter = filterSelect.value;
 });
 
-// Setup Kamera
+// 1. Setup Kamera dengan Orientasi & Resolusi HD (Full HD 1080p Priority)
 async function setupCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 1280, height: 720 },
+      video: { 
+        width: { ideal: 1920, max: 3840 },
+        height: { ideal: 1080, max: 2160 },
+        frameRate: { ideal: 30 }
+      },
       audio: false
     });
     video.srcObject = stream;
   } catch (err) {
-    alert("Kamera tidak terdeteksi. Pastikan Iriun/DroidCam terhubung!");
+    alert("Kamera tidak terdeteksi. Pastikan Iriun/DroidCam terhubung dan mendukung kualitas HD!");
   }
 }
 
@@ -48,12 +52,17 @@ function startCountdown(seconds) {
   });
 }
 
-// Snapshot Foto dari Video
+// 2. Snapshot Foto Resolusi Asli Kamera (Tanpa Kompresi Ukuran)
 function captureSnapshot() {
   const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = video.videoWidth || 1280;
-  tempCanvas.height = video.videoHeight || 720;
+  // Gunakan resolusi asli bawaan video stream agar gambar sangat tajam
+  tempCanvas.width = video.videoWidth || 1920;
+  tempCanvas.height = video.videoHeight || 1080;
   const tempCtx = tempCanvas.getContext('2d');
+
+  // Pengaturan Kualitas Render Sharp
+  tempCtx.imageSmoothingEnabled = true;
+  tempCtx.imageSmoothingQuality = 'high';
 
   tempCtx.filter = filterSelect.value;
   tempCtx.translate(tempCanvas.width, 0);
@@ -92,7 +101,7 @@ startBtn.addEventListener('click', async () => {
   downloadBtn.disabled = false;
 });
 
-// FUNGSI KHUSUS: Menggambar gambar ke canvas dengan rasio proporsional (Tanpa Gepeng)
+// FUNGSI KHUSUS: Menggambar gambar ke canvas dengan rasio proporsional & HD
 function drawImageProp(targetCtx, img, x, y, w, h) {
   const imgW = img.width;
   const imgH = img.height;
@@ -109,10 +118,12 @@ function drawImageProp(targetCtx, img, x, y, w, h) {
     srcY = (imgH - srcH) / 2;
   }
 
+  targetCtx.imageSmoothingEnabled = true;
+  targetCtx.imageSmoothingQuality = 'high';
   targetCtx.drawImage(img, srcX, srcY, srcW, srcH, x, y, w, h);
 }
 
-// MENGGAMBAR BUNGA MAWAR 3D BESAR
+// MENGGAMBAR BUNGA MAWAR 3D BESAR (HD Scaling)
 function drawLargeRoseCluster(x, y, scale = 1.8) {
   ctx.save();
   ctx.translate(x, y);
@@ -189,34 +200,35 @@ function drawLargeHeart3D(x, y, size = 25) {
 
 // Helper Menggambar List Ikon Dekorasi
 function drawEmojiBorder(icons) {
-  ctx.font = '42px sans-serif';
+  ctx.font = '80px sans-serif'; // Ukuran Font HD
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   let idx = 0;
 
-  for (let x = 45; x <= canvas.width - 45; x += 65) {
-    ctx.fillText(icons[idx % icons.length], x, 40);
-    ctx.fillText(icons[(idx + 2) % icons.length], x, canvas.height - 40);
+  for (let x = 90; x <= canvas.width - 90; x += 130) {
+    ctx.fillText(icons[idx % icons.length], x, 80);
+    ctx.fillText(icons[(idx + 2) % icons.length], x, canvas.height - 80);
     idx++;
   }
 
-  for (let y = 105; y <= canvas.height - 105; y += 65) {
-    ctx.fillText(icons[idx % icons.length], 40, y);
-    ctx.fillText(icons[(idx + 3) % icons.length], canvas.width - 40, y);
+  for (let y = 210; y <= canvas.height - 210; y += 130) {
+    ctx.fillText(icons[idx % icons.length], 80, y);
+    ctx.fillText(icons[(idx + 3) % icons.length], canvas.width - 80, y);
     idx++;
   }
 }
 
-// Render Hasil Akhir Frame
+// 3. Render Hasil Akhir Frame dalam Dimensi HD (2x Scaling)
 function renderPhotoLayout() {
   const layout = layoutSelect.value;
   const style = frameStyleSelect.value;
 
-  const borderThickness = 80; 
-  const imgW = 280;
-  const imgH = 210; // Rasio standar 4:3
-  const gap = 15;
+  // Menggunakan Dimensi Resolusi Tinggi (2x lipat dari ukuran standar)
+  const borderThickness = 160; 
+  const imgW = 560;
+  const imgH = 420; // 4:3 HD Ratio
+  const gap = 30;
 
   let cols = 1;
   let rows = 1;
@@ -230,11 +242,15 @@ function renderPhotoLayout() {
   canvas.width = borderThickness * 2 + (imgW * cols) + (gap * (cols - 1));
   canvas.height = borderThickness * 2 + (imgH * rows) + (gap * (rows - 1));
 
-  // 1. Base Frame Putih Studio
+  // Aktifkan Kualitas Interpolasi Tinggi pada Canvas Context
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  // Base Frame Putih Studio
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // 2. Draw Photos Proporsional (Anti Gepeng)
+  // Render Foto HD
   capturedImages.forEach((img, index) => {
     const col = index % cols;
     const row = Math.floor(index / cols);
@@ -242,28 +258,27 @@ function renderPhotoLayout() {
     const xPos = borderThickness + col * (imgW + gap);
     const yPos = borderThickness + row * (imgH + gap);
 
-    // Inner Border Foto
+    // Inner Border
     ctx.fillStyle = '#cbd5e1';
-    ctx.fillRect(xPos - 3, yPos - 3, imgW + 6, imgH + 6);
+    ctx.fillRect(xPos - 6, yPos - 6, imgW + 12, imgH + 12);
     
-    // Dipanggil lewat fungsi drawImageProp agar rasio foto tidak tertarik/gepeng
     drawImageProp(ctx, img, xPos, yPos, imgW, imgH);
   });
 
-  // 3. Dekorasi Frame
+  // Dekorasi Frame HD
   if (style === 'rose_romantic') {
-    drawLargeRoseCluster(60, 60, 1.4);
-    drawLargeRoseCluster(canvas.width - 60, 60, 1.4);
-    drawLargeRoseCluster(60, canvas.height - 60, 1.4);
-    drawLargeRoseCluster(canvas.width - 60, canvas.height - 60, 1.4);
+    drawLargeRoseCluster(120, 120, 2.8);
+    drawLargeRoseCluster(canvas.width - 120, 120, 2.8);
+    drawLargeRoseCluster(120, canvas.height - 120, 2.8);
+    drawLargeRoseCluster(canvas.width - 120, canvas.height - 120, 2.8);
 
-    for (let x = 150; x < canvas.width - 120; x += 60) {
-      drawLargeHeart3D(x, 40, 22);
-      drawLargeHeart3D(x, canvas.height - 40, 22);
+    for (let x = 300; x < canvas.width - 240; x += 120) {
+      drawLargeHeart3D(x, 80, 44);
+      drawLargeHeart3D(x, canvas.height - 80, 44);
     }
-    for (let y = 150; y < canvas.height - 120; y += 60) {
-      drawLargeHeart3D(40, y, 22);
-      drawLargeHeart3D(canvas.width - 40, y, 22);
+    for (let y = 300; y < canvas.height - 240; y += 120) {
+      drawLargeHeart3D(80, y, 44);
+      drawLargeHeart3D(canvas.width - 80, y, 44);
     }
   } else if (style === 'gold_glitter') {
     drawEmojiBorder(['⭐', '✨', '👑', '💫', '🌟', '🥇']);
@@ -297,8 +312,8 @@ layoutSelect.addEventListener('change', () => {
 
 downloadBtn.addEventListener('click', () => {
   const link = document.createElement('a');
-  link.download = `photobooth-${layoutSelect.value}-${Date.now()}.png`;
-  link.href = canvas.toDataURL('image/png');
+  link.download = `photobooth-HD-${layoutSelect.value}-${Date.now()}.png`;
+  link.href = canvas.toDataURL('image/png', 1.0); // Kualitas Maksimal (100%)
   link.click();
 });
 
