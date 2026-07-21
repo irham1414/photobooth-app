@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Photobooth Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📸 Studio Photobooth</h1>
+      <p>Studio foto pribadi dengan 10 tema dekorasi frame melimpah & variasi layout lengkap!</p>
+    </header>
+
+    <div class="main-content">
+      <!-- Area Kamera & Kontrol -->
+      <div class="camera-box">
+        <div class="control-panel">
+          <div class="control-group">
+            <label for="layout-select">📐 Tata Letak Foto:</label>
+            <select id="layout-select">
+              <option value="1x1">1x1 (1 Foto Square)</option>
+              <option value="2x1">2x1 (2 Foto Vertikal)</option>
+              <option value="3x1">3x1 (3 Foto Classic Strip)</option>
+              <option value="2x2">2x2 (4 Foto Grid)</option>
+              <option value="2x3">2x3 (6 Foto Grid)</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="frame-style-select">🌹 Dekorasi Frame (10 Tema):</label>
+            <select id="frame-style-select">
+              <option value="rose_romantic">1. Red Roses & Hearts (3D Large)</option>
+              <option value="gold_glitter">2. Golden Party & Stars</option>
+              <option value="cute_birthday">3. Pastel Birthday Party</option>
+              <option value="cute_cats">4. Cute Cat & Paws 🐱</option>
+              <option value="coquette_ribbon">5. Love & Coquette 🎀</option>
+              <option value="y2k_cyber">6. Y2K Cyber & Stars 👾</option>
+
+              <option value="flower_garden">7. Flower Garden 🌸</option>
+              <option value="ocean_splash">8. Ocean Splash 🌊</option>
+              <option value="sweet_dessert">9. Sweet Dessert & Candy 🍩</option>
+              <option value="space_galaxy">10. Space Adventure 🚀</option>
+            </select>
+          </div>
+
+          <div class="control-group full-width">
+            <label for="filter-select">✨ Filter Foto:</label>
+            <select id="filter-select">
+              <option value="none">Normal</option>
+              <option value="brightness(115%) contrast(110%)">Bright Glow</option>
+              <option value="grayscale(100%)">Black & White</option>
+              <option value="sepia(80%)">Vintage Sepia</option>
+              <option value="sepia(30%) saturate(140%) contrast(105%)">Warm Summer</option>
+              <option value="hue-rotate(180deg) saturate(120%)">Cool Dramatic</option>
+              <option value="contrast(160%) saturate(130%)">High Contrast</option>
+              <option value="blur(0.5px) brightness(110%)">Soft Dreamy</option>
+              <option value="grayscale(40%) contrast(90%) brightness(110%)">Faded Vintage</option>
+              <option value="invert(100%)">Invert / X-Ray</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="video-wrapper">
+          <video id="webcam" autoplay playsinline></video>
+          <div id="countdown" class="hidden">3</div>
+        </div>
+
+        <button id="start-btn">Mulai Foto</button>
+      </div>
+
+      <!-- Area Preview Hasil Photobooth -->
+      <div class="result-box">
+        <h3>Hasil Photo Frame</h3>
+        <canvas id="strip-canvas"></canvas>
+        <button id="download-btn" disabled>Download Foto</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
