@@ -11,12 +11,12 @@ const filterSelect = document.getElementById('filter-select');
 
 let capturedImages = [];
 
-// Filter Webcam Realtime
+// Apply Filter Webcam Realtime pada Video Preview
 filterSelect.addEventListener('change', () => {
   video.style.filter = filterSelect.value;
 });
 
-// 1. Setup Kamera dengan Orientasi & Resolusi HD (Full HD 1080p Priority)
+// Setup Kamera HD (Priority Full HD 1080p)
 async function setupCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -52,18 +52,17 @@ function startCountdown(seconds) {
   });
 }
 
-// 2. Snapshot Foto Resolusi Asli Kamera (Tanpa Kompresi Ukuran)
+// Snapshot Foto Resolusi Asli Kamera + Filter Instagram
 function captureSnapshot() {
   const tempCanvas = document.createElement('canvas');
-  // Gunakan resolusi asli bawaan video stream agar gambar sangat tajam
   tempCanvas.width = video.videoWidth || 1920;
   tempCanvas.height = video.videoHeight || 1080;
   const tempCtx = tempCanvas.getContext('2d');
 
-  // Pengaturan Kualitas Render Sharp
   tempCtx.imageSmoothingEnabled = true;
   tempCtx.imageSmoothingQuality = 'high';
 
+  // Menerapkan Filter Instagram ke Canvas
   tempCtx.filter = filterSelect.value;
   tempCtx.translate(tempCanvas.width, 0);
   tempCtx.scale(-1, 1);
@@ -101,7 +100,7 @@ startBtn.addEventListener('click', async () => {
   downloadBtn.disabled = false;
 });
 
-// FUNGSI KHUSUS: Menggambar gambar ke canvas dengan rasio proporsional & HD
+// Menggambar foto ke canvas dengan rasio proporsional (Anti-Gepeng)
 function drawImageProp(targetCtx, img, x, y, w, h) {
   const imgW = img.width;
   const imgH = img.height;
@@ -200,7 +199,7 @@ function drawLargeHeart3D(x, y, size = 25) {
 
 // Helper Menggambar List Ikon Dekorasi
 function drawEmojiBorder(icons) {
-  ctx.font = '80px sans-serif'; // Ukuran Font HD
+  ctx.font = '80px sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
@@ -219,12 +218,11 @@ function drawEmojiBorder(icons) {
   }
 }
 
-// 3. Render Hasil Akhir Frame dalam Dimensi HD (2x Scaling)
+// Render Hasil Akhir Frame HD
 function renderPhotoLayout() {
   const layout = layoutSelect.value;
   const style = frameStyleSelect.value;
 
-  // Menggunakan Dimensi Resolusi Tinggi (2x lipat dari ukuran standar)
   const borderThickness = 160; 
   const imgW = 560;
   const imgH = 420; // 4:3 HD Ratio
@@ -242,7 +240,6 @@ function renderPhotoLayout() {
   canvas.width = borderThickness * 2 + (imgW * cols) + (gap * (cols - 1));
   canvas.height = borderThickness * 2 + (imgH * rows) + (gap * (rows - 1));
 
-  // Aktifkan Kualitas Interpolasi Tinggi pada Canvas Context
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
@@ -250,7 +247,7 @@ function renderPhotoLayout() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Render Foto HD
+  // Render Foto
   capturedImages.forEach((img, index) => {
     const col = index % cols;
     const row = Math.floor(index / cols);
@@ -265,7 +262,7 @@ function renderPhotoLayout() {
     drawImageProp(ctx, img, xPos, yPos, imgW, imgH);
   });
 
-  // Dekorasi Frame HD
+  // Dekorasi Frame
   if (style === 'rose_romantic') {
     drawLargeRoseCluster(120, 120, 2.8);
     drawLargeRoseCluster(canvas.width - 120, 120, 2.8);
@@ -313,7 +310,7 @@ layoutSelect.addEventListener('change', () => {
 downloadBtn.addEventListener('click', () => {
   const link = document.createElement('a');
   link.download = `photobooth-HD-${layoutSelect.value}-${Date.now()}.png`;
-  link.href = canvas.toDataURL('image/png', 1.0); // Kualitas Maksimal (100%)
+  link.href = canvas.toDataURL('image/png', 1.0);
   link.click();
 });
 
